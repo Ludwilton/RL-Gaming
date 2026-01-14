@@ -342,6 +342,7 @@ def get_config():
         ),
         'network_groups': (('archer_0', 'archer_1'), ('knight_0', 'knight_1')),
         'obs_structure': ((1, 5), (2, 5), (2, 5), (2, 5), (20, 5), (20, 5)),
+        'enc_dim': 64,
         'setnet': True,
         'mask_obs': True,
         'device': 'cuda' if torch.cuda.is_available() else 'cpu',
