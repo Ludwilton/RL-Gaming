@@ -29,3 +29,113 @@ dev = [
 
 [project.urls]
 Repository = "https://github.com/AlbotGoodman/Ludwilton/RL-Gaming.git"
+
+
+####################
+# Ruff configuration
+####################
+
+[tool.ruff]
+# Some Ruff defaults - uncomment to set custom values
+# line-length = 88
+# indent-width = 4
+
+[tool.ruff.format]
+# Some Ruff defaults - uncomment to set custom values
+# indent-style = "space"
+line-ending = "native"      # "native" line endings will be converted to \n on Unix and \r\n on Windows while "auto" (deafult) converts to the first detected line ending
+
+[tool.ruff.lint]
+
+# # Ruff defaults - these are always selected unless ignored
+# select = [
+#     "E4",       # Pycodestyle errors (part of E group)
+#     "E7",       # Pycodestyle E7xx errors (naming, etc.)
+#     "E9",       # Pycodestyle E9xx errors (syntax)
+#     "F",        # Pyflakes - detects syntax errors and basic mistakes
+# ]
+
+extend-select = [
+    "FAST",     # FastAPI
+    "ANN",      # flake8-annotations
+    "ASYNC",    # flake8-async
+    "S",        # flake8-bandit
+    "BLE",      # flake8-blind-except
+    "FBT",      # flake8-boolean-trap
+    "B",        # flake8-bugbear
+    "A",        # flake8-builtins - make sure built-in names are not shadowed
+    "COM",      # flake8-commas - handle trailing commas
+    "C4",       # flake8-comprehensions
+    "DTZ",      # flake8-datetimez - enforce timezone-aware datetimes
+    "T10",      # flake8-debugger - debugging should not be left in production code
+    "DJ",       # flake8-django - detect bad practices on Django projects
+    "EM",       # flake8-errmsg - helps format nice error messages
+    "FIX",      # flake8-fixme - detect FIXME, TODO, etc. --> perhaps I can add my own?
+    "ISC",      # flake8-implicit-str-concat - looks for accidental quotes inside strings
+    "ICN",      # flake8-import-conventions - make sure imports follow naming conventions
+    "LOG",      # flake8-logging
+    "G",        # flake8-logging-format
+    "INP",      # flake8-no-pep420
+    "PIE",      # flake8-pie
+    "PT",       # flake8-pytest-style
+    "RET",      # flake8-return
+    "SIM",      # flake8-simplify
+#     "TC",       # flake8-type-checking - moves import that are only for type checking into TYPE_CHECKING blocks
+    "ARG",      # flake8-unused-arguments - looks for unused function/method arguments
+    "PTH",      # flake8-use-pathlib - encourages use of pathlib
+    "I001",     # isort
+    "C90",      # McCabe complexity
+    "NPY",      # NumPy - checks for deprecated/legacy NumPy code
+    "PD",       # pandas-vet - hints for better pandas code
+    "N",        # pep8-naming - naming conventions
+    "PERF",     # Perflint - performance improvements
+    "D",        # pydocstyle - docstring conventions
+#     "PL",      # Pylint - various checks --> not sure if this is necessary?
+    "PLE",      # Error
+    "PLR",      # Refactor
+    "PLW",      # Warning
+    "UP",       # pyupgrade - detects deprecated code
+    "TRY",      # tryceratops - exception handling
+]
+
+ignore = [
+    "S311",     # flake8-bandit - pseudo-random generators are not suitable for security/cryptographic purposes
+    "D100",     # pydocstyle - missing docstring in public module (it kept showing even in empty files)
+    "D104",     # pydocstyle - missing docstring in public module (it kept showing even in empty files)
+    "D203",     # pydocstyle - docstrings should be preceded by a blank line (incompatible with the PEP 257 recommended D211)
+    "D213",     # pydocstyle - multi-line docstrings should have a summary on the second line (incompatible with he PEP 257 recommended D212)
+    "COM812",   # flake8-commas - check for absent trailing commas
+    "COM819",   # Ruff recommends ignoring this
+    "W191",     # Ruff recommends ignoring this
+    "E111",     # Ruff recommends ignoring this
+    "E114",     # Ruff recommends ignoring this
+    "E117",     # Ruff recommends ignoring this
+    "D206",     # Ruff recommends ignoring this
+    "D300",     # Ruff recommends ignoring this
+    "Q000",     # Ruff recommends ignoring this
+    "Q001",     # Ruff recommends ignoring this
+    "Q002",     # Ruff recommends ignoring this
+    "Q003",     # Ruff recommends ignoring this
+]
+
+[tool.ruff.lint.flake8-import-conventions.aliases]
+# # Default aliases
+# altair = "alt"
+# matplotlib = "mpl"
+# "matplotlib.pyplot" = "plt"
+# numpy = "np"
+# "numpy.typing" = "npt"
+# pandas = "pd"
+# seaborn = "sns"
+# scipy = "sp"
+# tensorflow = "tf"
+# tkinter = "tk"
+# holoviews = "hv"
+# panel = "pn"
+# "plotly.express" = "px"
+# polars = "pl"
+# pyarrow = "pa"
+# "xml.etree.ElementTree" = "ET"
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+# Add new aliases that are not Ruff's defaults
