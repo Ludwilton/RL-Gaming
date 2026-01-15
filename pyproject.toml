@@ -1,8 +1,16 @@
 [project]
 name = "rl-gaming"
 version = "0.1.0"
-description = "Add your description here"
+description = "A reinforcement learning project for university focused on gaming."
+authors = [
+    {name = "Ludwig Carlegrund", email = "ludwig.carlegrund@iths.se"},
+    {name = "Hannes Fredriksson", email = "hannes.fredriksson@iths.se"},
+    {name = "Philip Langpohl", email = "philip.langpohl@iths.se"},
+    {name = "Anders Sanderli", email = "anders.sanderli@iths.se"},
+]
 readme = "README.md"
+license-files = "LICENSE"
+license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "gymnasium>=1.2.3",
@@ -15,4 +23,9 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ipykernel>=7.1.0",
+    "pre-commit>=4.5.1",
+    "ruff>=0.14.11",
 ]
+
+[project.urls]
+Repository = "https://github.com/AlbotGoodman/Ludwilton/RL-Gaming.git"
