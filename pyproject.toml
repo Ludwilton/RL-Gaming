@@ -56,16 +56,16 @@ line-ending = "native"      # "native" line endings will be converted to \n on U
 # ]
 
 extend-select = [
-    "FAST",     # FastAPI
-    "ANN",      # flake8-annotations
-    "ASYNC",    # flake8-async
-    "S",        # flake8-bandit
-    "BLE",      # flake8-blind-except
-    "FBT",      # flake8-boolean-trap
-    "B",        # flake8-bugbear
+    "FAST",     # FastAPI - FastAPI-specific linting rules
+    "ANN",      # flake8-annotations - type annotation checks
+    "ASYNC",    # flake8-async - async/await usage best practices
+    "S",        # flake8-bandit - security issue detection
+    "BLE",      # flake8-blind-except - avoid bare except clauses
+    "FBT",      # flake8-boolean-trap - avoid boolean trap anti-patterns
+    "B",        # flake8-bugbear - common bugs and design problems
     "A",        # flake8-builtins - make sure built-in names are not shadowed
     "COM",      # flake8-commas - handle trailing commas
-    "C4",       # flake8-comprehensions
+    "C4",       # flake8-comprehensions - improve list/set/dict comprehensions
     "DTZ",      # flake8-datetimez - enforce timezone-aware datetimes
     "T10",      # flake8-debugger - debugging should not be left in production code
     "DJ",       # flake8-django - detect bad practices on Django projects
@@ -73,13 +73,13 @@ extend-select = [
     "FIX",      # flake8-fixme - detect FIXME, TODO, etc. --> perhaps I can add my own?
     "ISC",      # flake8-implicit-str-concat - looks for accidental quotes inside strings
     "ICN",      # flake8-import-conventions - make sure imports follow naming conventions
-    "LOG",      # flake8-logging
-    "G",        # flake8-logging-format
-    "INP",      # flake8-no-pep420
-    "PIE",      # flake8-pie
-    "PT",       # flake8-pytest-style
-    "RET",      # flake8-return
-    "SIM",      # flake8-simplify
+    "LOG",      # flake8-logging - logging best practices
+    "G",        # flake8-logging-format - logging format string issues
+    "INP",      # flake8-no-pep420 - ensure packages have __init__.py files
+    "PIE",      # flake8-pie - miscellaneous linting rules
+    "PT",       # flake8-pytest-style - pytest coding style
+    "RET",      # flake8-return - return statement improvements
+    "SIM",      # flake8-simplify - code simplification suggestions
 #     "TC",       # flake8-type-checking - moves import that are only for type checking into TYPE_CHECKING blocks
     "ARG",      # flake8-unused-arguments - looks for unused function/method arguments
     "PTH",      # flake8-use-pathlib - encourages use of pathlib
