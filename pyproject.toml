@@ -9,7 +9,7 @@ authors = [
     {name = "Anders Sanderli", email = "anders.sanderli@iths.se"},
 ]
 readme = "README.md"
-license-files = "LICENSE"
+license-files = ["LICENSE"]
 license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
