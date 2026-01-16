@@ -43,7 +43,7 @@ Repository = "https://github.com/AlbotGoodman/Ludwilton/RL-Gaming.git"
 [tool.ruff.format]
 # Some Ruff defaults - uncomment to set custom values
 # indent-style = "space"
-line-ending = "native"      # "native" line endings will be converted to \n on Unix and \r\n on Windows while "auto" (deafult) converts to the first detected line ending
+line-ending = "native"      # "native" line endings will be converted to \n on Unix and \r\n on Windows while "auto" (default) converts to the first detected line ending
 
 [tool.ruff.lint]
 
