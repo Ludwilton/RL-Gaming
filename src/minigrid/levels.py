@@ -76,7 +76,7 @@ class ProceduralLevel(MiniGridEnv):
     """
     def __init__(
         self,
-        size: int = 16,
+        size: int = 10,
         max_steps: int | None = None,
         agent_start_pos: tuple[int, int] = (1, 1),
         agent_start_dir: int = 0,
