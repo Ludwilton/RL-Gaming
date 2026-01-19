@@ -209,6 +209,5 @@ __marimo__/
 # Custom
 test*
 temp*
-data/
 TODO
 local_models/
