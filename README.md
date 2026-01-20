@@ -7,9 +7,9 @@
 2. Install UV globally on your system
 3. Open the repo and run "make init"
 
-### Development
+## Development
 
-#### Ruff
+### Ruff
 
 It's recommended to install Ruff as an extension to your IDE - if it exists. In VS Code you will see feedback from Ruff in the "Problems" tab (same window as your integrated terminal).
 
