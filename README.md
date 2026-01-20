@@ -16,7 +16,7 @@ It's recommended to install Ruff as an extension to your IDE - if it exists. In 
 To get the same functionality manually you will need to run:
 
 ```bash
-ruff check .  # lint all files without fixes
-ruff check --fix .  # lint all files with automatic (safe) fixes
-ruff format .  # format all files
+uv run ruff check .  # lint all files without fixes
+uv run ruff check --fix .  # lint all files with automatic (safe) fixes
+uv run ruff format .  # format all files
 ```
