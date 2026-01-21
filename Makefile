@@ -4,7 +4,7 @@ init:
 	uv venv
 	uv sync
 	uv run pre-commit install
-	@echo "Project initialised. Please restart your shell to activate the virtual environment."
+	@echo "Project initialised successfully."
 
 update:
 	uv run pre-commit autoupdate
