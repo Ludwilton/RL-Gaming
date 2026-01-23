@@ -15,10 +15,10 @@ class EnvOptimiser:
 
     def __init__(
         self,
-        env_cls: MiniGridEnv,
+        env_cls: type[MiniGridEnv],
         n_envs: int,
-        wrapper_cls: list[Wrapper],
-        vec_env_cls: VecEnv = SubprocVecEnv,
+        wrapper_cls: list[type[Wrapper]],
+        vec_env_cls: type[VecEnv] = SubprocVecEnv,
         log_dir: Path = Path("logs/"),  # creates dir in root by default
     ) -> None:
         """Init method."""
