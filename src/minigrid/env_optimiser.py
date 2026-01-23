@@ -1,8 +1,6 @@
 from collections.abc import Callable
 from pathlib import Path
 
-from feature_extractor import MinigridFeaturesExtractor
-from simple_env import SimpleEnv
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecEnv, VecMonitor
 
@@ -34,12 +32,9 @@ class EnvOptimiser:
         def _init() -> MiniGridEnv:
             """Init method."""
             env = self.env_cls()
-
-            # Wrappers
             if self.wrapper_cls:
                 for wrapper in self.wrapper_cls:
                     env = wrapper(env)
-
             env.reset(seed=idx)
             return env
 
@@ -54,22 +49,25 @@ class EnvOptimiser:
         )  # record episode reward, length, time to csv
 
 
-if __name__ == "__main__":
-    # Test EnvOptimiser
-    builder = EnvOptimiser(
+def test_optimiser() -> None:
+    """Test the environment optimiser."""
+    from feature_extractor import MinigridFeaturesExtractor
+    from simple_env import SimpleEnv
+
+    optimiser = EnvOptimiser(
         env_cls=SimpleEnv,
         n_envs=4,
         wrapper_cls=[ImgObsWrapper],
     )
-    vec_env = builder.build_vec_env()
+    vec_env_train = optimiser.build_vec_env()
     policy_kwargs = {
         "features_extractor_class": MinigridFeaturesExtractor,
         "features_extractor_kwargs": {"features_dim": 128},
     }
-    model = PPO(
-        "CnnPolicy", vec_env, policy_kwargs=policy_kwargs, learning_rate=0.00003
-    )
-    print("------------- Start Learning -------------")
+    model = PPO(policy="CnnPolicy", env=vec_env_train, policy_kwargs=policy_kwargs)
     model.learn(total_timesteps=20_000, progress_bar=True)
-    model.save("test_save")
-    print("------------- Done Learning -------------")
+    model.save("test_model")
+
+
+if __name__ == "__main__":
+    test_optimiser()
