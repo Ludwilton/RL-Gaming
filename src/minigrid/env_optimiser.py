@@ -4,7 +4,6 @@ from pathlib import Path
 from feature_extractor import MinigridFeaturesExtractor
 from simple_env import SimpleEnv
 from stable_baselines3 import PPO
-from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecEnv, VecMonitor
 
 from minigrid.minigrid_env import MiniGridEnv
@@ -17,16 +16,16 @@ class EnvOptimiser:
     def __init__(
         self,
         env_cls: MiniGridEnv,
-        n_envs: int = 1,
+        n_envs: int,
+        wrapper_cls: list[Wrapper],
         vec_env_cls: VecEnv = SubprocVecEnv,
-        wrapper_cls: list[Wrapper] | None = None,
         log_dir: Path = Path("logs/"),  # creates dir in root by default
     ) -> None:
         """Init method."""
         self.env_cls = env_cls
         self.n_envs = n_envs
-        self.vec_env_cls = vec_env_cls
         self.wrapper_cls = wrapper_cls
+        self.vec_env_cls = vec_env_cls
         self.log_dir = log_dir
 
     def _build_env(self, idx: int = 0) -> Callable:
@@ -37,26 +36,18 @@ class EnvOptimiser:
             env = self.env_cls()
 
             # Wrappers
-            if self.wrapper_cls:  # and isinstance(self.wrapper_cls, list):
-                for wrapper in self.wrapper_cls:  # if list of wrappers
+            if self.wrapper_cls:
+                for wrapper in self.wrapper_cls:
                     env = wrapper(env)
-            # elif self.wrapper_cls:  # if single wrapper
-            #     env = self.wrapper_cls(env)
 
-            # Monitor
-            self.log_dir.mkdir(parents=True, exist_ok=True)
-            # if self.n_envs == 1:
-            env = Monitor(
-                env, filename=str(self.log_dir / f"{idx}_")
-            )  # record episode reward, length, time to csv
             env.reset(seed=idx)
-
             return env
 
         return _init
 
     def build_vec_env(self) -> VecEnv:
         """Make vectorized environment."""
+        self.log_dir.mkdir(parents=True, exist_ok=True)
         vec_env = self.vec_env_cls([self._build_env(i) for i in range(self.n_envs)])
         return VecMonitor(
             vec_env, str(self.log_dir)
@@ -65,12 +56,10 @@ class EnvOptimiser:
 
 if __name__ == "__main__":
     # Test EnvOptimiser
-    log_dir = Path("tmp/")
     builder = EnvOptimiser(
         env_cls=SimpleEnv,
         n_envs=4,
         wrapper_cls=[ImgObsWrapper],
-        # log_dir=log_dir,
     )
     vec_env = builder.build_vec_env()
     policy_kwargs = {
