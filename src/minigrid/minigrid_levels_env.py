@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from gymnasium.spaces import Discrete
+
 from minigrid.core.grid import Grid
 from minigrid.core.mission import MissionSpace
 from minigrid.core.world_object import Goal, Lava, Wall
@@ -65,6 +67,10 @@ class MiniGridLevelsEnv(MiniGridEnv):
             render_mode=render_mode,
             **kwargs,
         )
+
+        # Allow only 3 actions permitted: left, right, forward
+        # (Available actions in 'minigrid.core.actions')
+        self.action_space = Discrete(3)
 
     @classmethod
     def get_levels(cls) -> dict:
