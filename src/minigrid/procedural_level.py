@@ -10,6 +10,15 @@ from minigrid.minigrid_env import MiniGridEnv
 class ProceduralLevel(MiniGridEnv):
     """
     random generated level, walls & lava, difficulty scaling
+    
+    parameters:
+        size: size of the grid (size x size) - walls included
+        max_steps: maximum number of steps per episode
+        agent_start_pos: starting position of the agent (x, y)
+        agent_start_dir: starting direction of the agent (0: right, 1: down, 2: left, 3: up)
+        difficulty: difficulty level from 0 (easy) to 1000 (hard)
+    returns:
+        MiniGrid environment with procedurally generated levels.
     """
     def __init__(
         self,

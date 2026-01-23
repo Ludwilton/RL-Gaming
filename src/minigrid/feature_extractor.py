@@ -1,22 +1,20 @@
 from __future__ import annotations
-
 import gymnasium as gym
 import torch
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 from torch import nn
 
 
-
 class MinigridFeaturesExtractor(BaseFeaturesExtractor):
-    """Custom CNN to extract features from MiniGrid observations."""
-
+    """CNN to extract features from MiniGrid observations.
+    params:
+        features_dim: (int) Number of features extracted. low = less features, high = more features, more compute time
+    """
     def __init__(
         self,
         observation_space: gym.Space,
         features_dim: int = 512,
-        # normalized_image: bool = False
     ) -> None:
-        """Initialize the feature extractor."""
         super().__init__(observation_space, features_dim)
         n_input_channels = observation_space.shape[0]
         self.cnn = nn.Sequential(
@@ -37,5 +35,4 @@ class MinigridFeaturesExtractor(BaseFeaturesExtractor):
         self.linear = nn.Sequential(nn.Linear(n_flatten, features_dim), nn.ReLU())
 
     def forward(self, observations: torch.Tensor) -> torch.Tensor:
-        """Forward pass to extract features from observations."""
         return self.linear(self.cnn(observations))
