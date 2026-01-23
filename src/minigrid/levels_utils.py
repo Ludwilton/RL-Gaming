@@ -51,5 +51,37 @@ def display_all_levels(max_cols: int = 5) -> None:
     plt.show()
 
 
+def run_random_actions_on_level(level_id: int, debug: bool = False) -> None:
+    """Run a MiniGrid level by repeatedly sampling actions from the action space."""
+    env = MiniGridLevelsEnv(level_id=level_id, render_mode="human")
+    obs, info = env.reset()
+
+    done = False
+    steps_counter = 0
+
+    if debug:
+        print("env.action_space", env.action_space)
+
+    while not done:
+        action = env.action_space.sample()
+        obs, reward, terminated, truncated, info = env.step(action)
+        steps_counter += 1
+
+        if debug:
+            print(f"Step: {steps_counter}", f"Action: {action}")
+
+        if terminated:
+            if debug:
+                print("MiniGrid terminated!")
+            done = True
+
+        if truncated:
+            if debug:
+                print("MiniGrid truncated!")
+            done = True
+
+    env.close()
+
+
 def test_model_on_level(model: PPO, level_id: int) -> None:
     """Test model on level."""

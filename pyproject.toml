@@ -28,7 +28,7 @@ dev = [
 ]
 
 [project.urls]
-Repository = "https://github.com/AlbotGoodman/Ludwilton/RL-Gaming.git"
+Repository = "https://github.com/Ludwilton/RL-Gaming.git"
 
 
 ####################
@@ -116,6 +116,8 @@ ignore = [
     "Q001",     # Ruff recommends ignoring this
     "Q002",     # Ruff recommends ignoring this
     "Q003",     # Ruff recommends ignoring this
+    "FBT001",   # flake8-boolean-trap - avoid boolean trap anti-patterns (not able to have 'debug: bool' as function argument)
+    "FBT002",   # flake8-boolean-trap - avoid boolean trap anti-patterns (not able to have 'debug: bool' as function argument)
 ]
 
 [tool.ruff.lint.flake8-import-conventions.aliases]
