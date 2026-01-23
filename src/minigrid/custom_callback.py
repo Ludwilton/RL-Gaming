@@ -48,5 +48,35 @@ class CustomCallback(BaseCallback):
         return True
 
 
+def test_callback() -> None:
+    """Test the custom callback."""
+    from env_optimiser import EnvOptimiser
+    from feature_extractor import MinigridFeaturesExtractor
+    from simple_env import SimpleEnv
+    from stable_baselines3 import PPO
+
+    from minigrid.wrappers import ImgObsWrapper
+
+    n_envs = 8
+    eval_freq = max(500 // n_envs, 1)  # accounting for multiple environments
+    callback = CustomCallback(
+        check_freq=eval_freq,
+        log_dir="logs/",
+        save_dir="models/",
+    )
+    optimiser = EnvOptimiser(
+        env_cls=SimpleEnv,
+        n_envs=n_envs,
+        wrapper_cls=[ImgObsWrapper],
+    )
+    vec_env_train = optimiser.build_vec_env()
+    policy_kwargs = {
+        "features_extractor_class": MinigridFeaturesExtractor,
+        "features_extractor_kwargs": {"features_dim": 128},
+    }
+    model = PPO(policy="CnnPolicy", env=vec_env_train, policy_kwargs=policy_kwargs)
+    model.learn(total_timesteps=200_000, callback=callback, progress_bar=True)
+
+
 if __name__ == "__main__":
-    pass
+    test_callback()
