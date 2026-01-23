@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
-
-from levels_utils import get_levels
 
 from minigrid.core.grid import Grid
 from minigrid.core.mission import MissionSpace
 from minigrid.core.world_object import Goal, Lava, Wall
 from minigrid.manual_control import ManualControl
 from minigrid.minigrid_env import MiniGridEnv
+
+BASE_DIR = Path(__file__).resolve().parent
+LEVELS_PATH = BASE_DIR / "levels.json"
 
 
 class MiniGridLevelsEnv(MiniGridEnv):
@@ -28,7 +31,7 @@ class MiniGridLevelsEnv(MiniGridEnv):
             **kwargs: Additional keyword arguments.
 
         """
-        levels = get_levels()
+        levels = self.get_levels()
 
         self.level_id = level_id
         self.level = levels[level_id]
@@ -62,6 +65,13 @@ class MiniGridLevelsEnv(MiniGridEnv):
             render_mode=render_mode,
             **kwargs,
         )
+
+    @classmethod
+    def get_levels(cls) -> dict:
+        """Get all levels from json file."""
+        with LEVELS_PATH.open(encoding="utf-8") as f:
+            levels = json.load(f)
+            return {int(k): v for k, v in levels.items()}
 
     def _gen_grid(self, width: int, height: int) -> None:
         """Generate level grid.
@@ -103,14 +113,14 @@ class MiniGridLevelsEnv(MiniGridEnv):
             self.agent_dir = self._rand_int(0, 4)
 
 
-def human_test(level_id: int = 1) -> None:
+def human_test_level(level_id: int = 1) -> None:
     """Test the MiniGrid environment with manual control."""
     env = MiniGridLevelsEnv(render_mode="human", level_id=level_id)
 
-    # Enable manual control for testing
+    # Test level with manual control
     manual_control = ManualControl(env)
     manual_control.start()
 
 
 if __name__ == "__main__":
-    human_test(level_id=6)
+    human_test_level(level_id=6)
