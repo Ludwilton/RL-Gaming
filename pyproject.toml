@@ -28,7 +28,7 @@ dev = [
 ]
 
 [project.urls]
-Repository = "https://github.com/AlbotGoodman/Ludwilton/RL-Gaming.git"
+Repository = "https://github.com/Ludwilton/RL-Gaming.git"
 
 
 ####################
