@@ -8,9 +8,7 @@ from stable_baselines3.common.results_plotter import load_results, ts2xy
 class CustomCallback(BaseCallback):
     """Monitor training and save the model with the highest recent mean reward."""
 
-    def __init__(
-        self, check_freq: int, log_dir: str, save_dir: str, verbose: int = 1
-    ) -> None:
+    def __init__(self, check_freq: int, log_dir: Path, save_dir: Path, verbose: int = 0) -> None:
         """Initialise callback."""
         super().__init__(verbose)
         self.check_freq = check_freq
@@ -21,13 +19,10 @@ class CustomCallback(BaseCallback):
     def _on_step(self) -> bool:
         saved = False
         if self.n_calls % self.check_freq == 0:
-            x, y = ts2xy(
-                load_results(self.log_dir), "timesteps"
-            )  # load training rewards from log
+            df = load_results(self.log_dir)
+            x, y = ts2xy(df, "timesteps")  # x=timesteps, y=rewards
             if len(x) > 0:
-                mean_reward = np.mean(
-                    y[-100:]
-                )  # mean training reward over the last 100 episodes
+                mean_reward = np.mean(y[-100:])  # mean reward over the last 100 episodes
                 if mean_reward > self.best_mean_reward:
                     self.best_mean_reward = mean_reward
                     self.model.save(self.save_path)
@@ -40,9 +35,7 @@ class CustomCallback(BaseCallback):
                         print("| Timesteps | Rew/Ep | Model Saved |")
                         print("------------------------------------")
                         self.header_printed = True
-                    print(
-                        f"| {self.num_timesteps:10} | {mean_reward:7.2f} | {str(saved):^12} |"
-                    )
+                    print(f"| {self.num_timesteps:10} | {mean_reward:7.2f} | {str(saved):^12} |")
                     print("------------------------------------")
 
         return True
@@ -58,16 +51,22 @@ def test_callback() -> None:
     from minigrid.wrappers import ImgObsWrapper
 
     n_envs = 8
-    eval_freq = max(500 // n_envs, 1)  # accounting for multiple environments
+    n_timesteps = 200_000
+    freq = 500
+
+    log_dir = Path("logs/")
+    log_dir.mkdir(parents=True, exist_ok=True)
+    save_dir = Path("models/")
+    save_dir.mkdir(parents=True, exist_ok=True)
+
+    eval_freq = max(freq // n_envs, 1)  # accounting for multiple environments
     callback = CustomCallback(
         check_freq=eval_freq,
-        log_dir="logs/",
-        save_dir="models/",
+        log_dir=log_dir,
+        save_dir=save_dir,
     )
     optimiser = EnvOptimiser(
-        env_cls=SimpleEnv,
-        n_envs=n_envs,
-        wrapper_cls=[ImgObsWrapper],
+        env_cls=SimpleEnv, n_envs=n_envs, wrapper_cls=[ImgObsWrapper], log_dir=log_dir
     )
     vec_env_train = optimiser.build_vec_env()
     policy_kwargs = {
@@ -75,7 +74,7 @@ def test_callback() -> None:
         "features_extractor_kwargs": {"features_dim": 128},
     }
     model = PPO(policy="CnnPolicy", env=vec_env_train, policy_kwargs=policy_kwargs)
-    model.learn(total_timesteps=200_000, callback=callback, progress_bar=True)
+    model.learn(total_timesteps=n_timesteps, callback=callback, progress_bar=True)
 
 
 if __name__ == "__main__":
