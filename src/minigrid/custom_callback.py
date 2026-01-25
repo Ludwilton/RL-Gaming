@@ -1,3 +1,4 @@
+from itertools import count
 from pathlib import Path
 
 import numpy as np
@@ -6,15 +7,41 @@ from stable_baselines3.common.results_plotter import load_results, ts2xy
 
 
 class CustomCallback(BaseCallback):
-    """Monitor training and save the model with the highest recent mean reward."""
+    """Monitor training and save the model with the highest mean reward."""
 
-    def __init__(self, check_freq: int, log_dir: Path, save_dir: Path, verbose: int = 0) -> None:
+    def __init__(
+        self,
+        check_freq: int,
+        save_dir: Path = Path("models/"),
+        log_dir: Path = Path("logs/"),
+        verbose: int = 0,
+    ) -> None:
         """Initialise callback."""
         super().__init__(verbose)
         self.check_freq = check_freq
+        self.save_dir = save_dir
         self.log_dir = log_dir
-        self.save_path = Path(save_dir) / "best_model"
+        self.filename = self._no_overwrite()
         self.best_mean_reward = -np.inf
+
+    def _no_overwrite(self) -> Path:
+        """Enforce a filename prefix to ensure that the filename does not overwrite an existing file."""
+        suffix = "model.zip"
+        for counter in count(0):
+            filename = self.save_dir / f"{counter}_{suffix}"
+            if not filename.exists():
+                break
+        return filename
+
+    def _eval_output(self, mean_reward: float, saved: bool) -> None:
+        if self.verbose > 0:
+            if not getattr(self, "header_printed", False):
+                print("------------------------------------")
+                print("| Timesteps | Rew/Ep | Model Saved |")
+                print("------------------------------------")
+                self.header_printed = True
+            print(f"| {self.num_timesteps:9} | {mean_reward:6.2f} | {str(saved):^11} |")
+            print("------------------------------------")
 
     def _on_step(self) -> bool:
         saved = False
@@ -25,19 +52,9 @@ class CustomCallback(BaseCallback):
                 mean_reward = np.mean(y[-100:])  # mean reward over the last 100 episodes
                 if mean_reward > self.best_mean_reward:
                     self.best_mean_reward = mean_reward
-                    self.model.save(self.save_path)
+                    self.model.save(self.filename)
                     saved = True
-
-                # Evaluation output
-                if self.verbose > 0:
-                    if not getattr(self, "header_printed", False):
-                        print("------------------------------------")
-                        print("| Timesteps | Rew/Ep | Model Saved |")
-                        print("------------------------------------")
-                        self.header_printed = True
-                    print(f"| {self.num_timesteps:10} | {mean_reward:7.2f} | {str(saved):^12} |")
-                    print("------------------------------------")
-
+                self._eval_output(mean_reward, saved)
         return True
 
 
@@ -64,6 +81,7 @@ def test_callback() -> None:
         check_freq=eval_freq,
         log_dir=log_dir,
         save_dir=save_dir,
+        verbose=1,
     )
     optimiser = EnvOptimiser(
         env_cls=SimpleEnv, n_envs=n_envs, wrapper_cls=[ImgObsWrapper], log_dir=log_dir
