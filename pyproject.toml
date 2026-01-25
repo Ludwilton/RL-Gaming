@@ -39,7 +39,7 @@ Repository = "https://github.com/Ludwilton/RL-Gaming.git"
 
 [tool.ruff]
 # Some Ruff defaults - uncomment to set custom values
-# line-length = 88
+line-length = 100        # default is 88
 # indent-width = 4
 
 [tool.ruff.format]
