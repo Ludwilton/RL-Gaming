@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from itertools import count
 from pathlib import Path
 
 from stable_baselines3 import PPO
@@ -26,6 +27,15 @@ class EnvOptimiser:
         self.vec_env_cls = vec_env_cls
         self.log_dir = log_dir
 
+    def _no_overwrite(self) -> Path:
+        """Enforce a filename prefix to ensure that the filename does not overwrite an existing file."""
+        suffix = "monitor.csv"  # the hardcoded default suffix used by Monitor/VecMonitor
+        for counter in count(0):
+            filename = self.log_dir / f"{counter}_{suffix}"
+            if not filename.exists():
+                break
+        return filename
+
     def _build_env(self, idx: int = 0) -> Callable:
         """Make environment."""
 
@@ -46,7 +56,7 @@ class EnvOptimiser:
         vec_env = self.vec_env_cls([self._build_env(i) for i in range(self.n_envs)])
 
         # Record episode reward, length, time to csv
-        return VecMonitor(vec_env, str(self.log_dir))
+        return VecMonitor(vec_env, str(self._no_overwrite()))
 
 
 def test_optimiser() -> None:
@@ -74,7 +84,7 @@ def test_optimiser() -> None:
     }
     model = PPO(policy="CnnPolicy", env=vec_env_train, policy_kwargs=policy_kwargs)
     model.learn(total_timesteps=n_timesteps, progress_bar=True)
-    model.save(save_dir / "test_model")
+    model.save(save_dir / "test_model")  # this will overwrite existing model
 
 
 if __name__ == "__main__":
