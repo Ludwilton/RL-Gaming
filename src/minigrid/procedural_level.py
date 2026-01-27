@@ -1,17 +1,20 @@
 from __future__ import annotations
+
 from collections import deque
+
+from gymnasium.spaces import Discrete
+
 from minigrid.core.grid import Grid
 from minigrid.core.mission import MissionSpace
 from minigrid.core.world_object import Goal, Lava, Wall
 from minigrid.minigrid_env import MiniGridEnv
 
 
-
 class ProceduralLevel(MiniGridEnv):
-    """
-    random generated level, walls & lava, difficulty scaling
-    
-    parameters:
+    """random generated level, walls & lava, difficulty .
+
+    Parameters
+    ----------
         size: size of the grid (size x size) - walls included
         max_steps: maximum number of steps per episode
         agent_start_pos: starting position of the agent (x, y)
@@ -19,14 +22,16 @@ class ProceduralLevel(MiniGridEnv):
         difficulty: difficulty level from 0 (easy) to 1000 (hard)
     returns:
         MiniGrid environment with procedurally generated levels.
+
     """
+
     def __init__(
         self,
         size: int = 10,
         max_steps: int | None = None,
         agent_start_pos: tuple[int, int] = (1, 1),
         agent_start_dir: int = 0,
-        difficulty: int = 0, #scale 0-1000
+        difficulty: int = 0,  # scale 0-1000
         **kwargs: dict[str, dict],
     ) -> None:
         self.agent_start_pos = agent_start_pos
@@ -44,6 +49,9 @@ class ProceduralLevel(MiniGridEnv):
             max_steps=max_steps,
             **kwargs,
         )
+        # Allow only 3 actions permitted: left, right, forward
+        # (Available actions in 'minigrid.core.actions')
+        self.action_space = Discrete(3)
 
     @staticmethod
     def _gen_mission() -> str:
@@ -89,7 +97,7 @@ class ProceduralLevel(MiniGridEnv):
     def _gen_grid(self, width: int, height: int) -> None:
         max_attempts = 100
 
-        for attempt in range(max_attempts):
+        for _ in range(max_attempts):
             self.grid = Grid(width, height)
 
             self.grid.wall_rect(0, 0, width, height)
@@ -113,22 +121,23 @@ class ProceduralLevel(MiniGridEnv):
             self.place_obj(Goal(), max_tries=100)
 
             if self._is_solvable(width, height):
-                self.mission = f"procedurally generated level (difficulty: {self.difficulty})"
+                self.mission = (
+                    f"procedurally generated level (difficulty: {self.difficulty})"
+                )
                 return
 
         self.grid = Grid(width, height)
         self.grid.wall_rect(0, 0, width, height)
-        
+
         if self.agent_start_pos is not None:
             self.agent_pos = self.agent_start_pos
             self.agent_dir = self.agent_start_dir
         else:
             self.place_agent()
-        
+
         self.place_obj(Goal(), max_tries=100)
 
         self.mission = f"procedurally generated level (difficulty: {self.difficulty})"
-
 
 
 def main() -> None:

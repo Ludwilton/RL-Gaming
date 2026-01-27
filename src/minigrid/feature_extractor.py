@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import gymnasium as gym
 import torch
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
@@ -7,9 +8,11 @@ from torch import nn
 
 class MinigridFeaturesExtractor(BaseFeaturesExtractor):
     """CNN to extract features from MiniGrid observations.
+    
     params:
         features_dim: (int) Number of features extracted. low = less features, high = more features, more compute time
     """
+
     def __init__(
         self,
         observation_space: gym.Space,
