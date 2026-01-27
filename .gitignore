@@ -210,7 +210,5 @@ __marimo__/
 test*
 temp*
 TODO
-logs/
-/knights
-/models_ippo
-/models_dqn
+models/
+agent_actions_logs/
