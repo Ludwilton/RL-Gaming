@@ -213,5 +213,4 @@ TODO
 logs/
 /knights
 /models_ippo
-onehotrecurrentPPO1000difficulty400ksteps.mp4
 /models_dqn
