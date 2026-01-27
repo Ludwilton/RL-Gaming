@@ -34,6 +34,24 @@ class ProceduralLevel(MiniGridEnv):
         difficulty: int = 0,  # scale 0-1000
         **kwargs: dict[str, dict],
     ) -> None:
+        """Initialize a procedurally generated MiniGrid environment.
+
+        Parameters
+        ----------
+        size : int
+            Size of the grid (size x size), including walls.
+        max_steps : int or None
+            Maximum number of steps per episode.
+        agent_start_pos : tuple[int, int]
+            Starting position of the agent (x, y).
+        agent_start_dir : int
+            Starting direction of the agent (0: right, 1: down, 2: left, 3: up).
+        difficulty : int
+            Difficulty level from 0 (easy) to 1000 (hard).
+        **kwargs : dict
+            Additional keyword arguments.
+
+        """
         self.agent_start_pos = agent_start_pos
         self.agent_start_dir = agent_start_dir
         self.difficulty = max(0, min(1000, difficulty))

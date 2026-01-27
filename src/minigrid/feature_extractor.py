@@ -7,17 +7,20 @@ from torch import nn
 
 
 class MinigridFeaturesExtractor(BaseFeaturesExtractor):
-    """CNN to extract features from MiniGrid observations.
-    
-    params:
-        features_dim: (int) Number of features extracted. low = less features, high = more features, more compute time
-    """
+    """CNN to extract features from MiniGrid observations."""
 
     def __init__(
         self,
         observation_space: gym.Space,
         features_dim: int = 512,
     ) -> None:
+        """Initialize the MinigridFeaturesExtractor.
+
+        Args:
+            observation_space (gym.Space): The observation space of the environment.
+            features_dim (int): Number of features extracted by the network.
+
+        """
         super().__init__(observation_space, features_dim)
         n_input_channels = observation_space.shape[0]
         self.cnn = nn.Sequential(
@@ -38,4 +41,5 @@ class MinigridFeaturesExtractor(BaseFeaturesExtractor):
         self.linear = nn.Sequential(nn.Linear(n_flatten, features_dim), nn.ReLU())
 
     def forward(self, observations: torch.Tensor) -> torch.Tensor:
+        """Forward pass to extract features from observations."""
         return self.linear(self.cnn(observations))
