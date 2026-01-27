@@ -14,34 +14,34 @@ class EnvOptimiser:
 
     def __init__(
         self,
-        env_cls: type[MiniGridEnv],
+        env: MiniGridEnv,
         n_envs: int,
         wrapper_cls: list[type[Wrapper]],
         vec_env_cls: type[VecEnv] = SubprocVecEnv,
-        log_dir: Path = Path("logs/"),  # creates dir in root by default
+        save_dir: Path = Path("models/"),  # creates dir in root by default
     ) -> None:
         """Init method."""
-        self.env_cls = env_cls
+        self.env = env
         self.n_envs = n_envs
         self.wrapper_cls = wrapper_cls
         self.vec_env_cls = vec_env_cls
-        self.log_dir = log_dir
+        self.save_dir = save_dir
+        self.full_path = self._no_overwrite()
 
     def _no_overwrite(self) -> Path:
-        """Enforce a filename prefix to ensure that the filename does not overwrite an existing file."""
-        suffix = "monitor.csv"  # the hardcoded default suffix used by Monitor/VecMonitor
+        filename = "monitor.csv"
         for counter in count(0):
-            filename = self.log_dir / f"{counter}_{suffix}"
-            if not filename.exists():
+            file_path = self.save_dir / f"run_{counter}"
+            if not file_path.exists():
                 break
-        return filename
+        return file_path / filename
 
     def _build_env(self, idx: int = 0) -> Callable:
         """Make environment."""
 
         def _init() -> MiniGridEnv:
             """Init method."""
-            env = self.env_cls()
+            env = self.env
             if self.wrapper_cls:
                 for wrapper in self.wrapper_cls:
                     env = wrapper(env)
@@ -52,11 +52,11 @@ class EnvOptimiser:
 
     def build_vec_env(self) -> VecEnv:
         """Make vectorized environment."""
-        self.log_dir.mkdir(parents=True, exist_ok=True)
+        self.save_dir.mkdir(parents=True, exist_ok=True)
         vec_env = self.vec_env_cls([self._build_env(i) for i in range(self.n_envs)])
 
         # Record episode reward, length, time to csv
-        return VecMonitor(vec_env, str(self._no_overwrite()))
+        return VecMonitor(vec_env, str(self.full_path))
 
 
 def test_optimiser() -> None:
@@ -69,14 +69,11 @@ def test_optimiser() -> None:
     n_envs = 8
     n_timesteps = 5_000
 
-    log_dir = Path("logs/")
-    log_dir.mkdir(parents=True, exist_ok=True)
     save_dir = Path("models/")
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    optimiser = EnvOptimiser(
-        env_cls=SimpleEnv, n_envs=n_envs, wrapper_cls=[ImgObsWrapper], log_dir=log_dir
-    )
+    env = SimpleEnv()
+    optimiser = EnvOptimiser(env=env, n_envs=n_envs, wrapper_cls=[ImgObsWrapper], save_dir=save_dir)
     vec_env_train = optimiser.build_vec_env()
     policy_kwargs = {
         "features_extractor_class": MinigridFeaturesExtractor,
@@ -84,7 +81,6 @@ def test_optimiser() -> None:
     }
     model = PPO(policy="CnnPolicy", env=vec_env_train, policy_kwargs=policy_kwargs)
     model.learn(total_timesteps=n_timesteps, progress_bar=True)
-    model.save(save_dir / "test_model")  # this will overwrite existing model
 
 
 if __name__ == "__main__":
