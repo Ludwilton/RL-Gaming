@@ -18,7 +18,7 @@ class EnvOptimiser:
         n_envs: int,
         wrapper_cls: list[type[Wrapper]],
         vec_env_cls: type[VecEnv] = SubprocVecEnv,
-        save_dir: Path = Path("models/"),  # creates dir in root by default
+        save_dir: Path = Path("models/"),
     ) -> None:
         """Init method."""
         self.env = env
@@ -26,18 +26,18 @@ class EnvOptimiser:
         self.wrapper_cls = wrapper_cls
         self.vec_env_cls = vec_env_cls
         self.save_dir = save_dir
-        self.full_path = self._no_overwrite()
+        self.file_path = self._make_save_folder() / "monitor.csv"
 
-    def _no_overwrite(self) -> Path:
-        filename = "monitor.csv"
+    def _make_save_folder(self) -> Path:
+        """Create a unique directory to avoid overwriting existing files."""
         for counter in count(0):
-            file_path = self.save_dir / f"run_{counter}"
-            if not file_path.exists():
+            folder = self.save_dir / f"run_{counter}"
+            if not folder.exists():
                 break
-        return file_path / filename
+        return folder
 
     def _build_env(self, idx: int = 0) -> Callable:
-        """Make environment."""
+        """Build individual environment with wrappers applied."""
 
         def _init() -> MiniGridEnv:
             """Init method."""
@@ -51,12 +51,12 @@ class EnvOptimiser:
         return _init
 
     def build_vec_env(self) -> VecEnv:
-        """Make vectorized environment."""
+        """Build the vectorised environment."""
         self.save_dir.mkdir(parents=True, exist_ok=True)
         vec_env = self.vec_env_cls([self._build_env(i) for i in range(self.n_envs)])
 
         # Record episode reward, length, time to csv
-        return VecMonitor(vec_env, str(self.full_path))
+        return VecMonitor(vec_env, str(self.file_path))
 
 
 def test_optimiser() -> None:
