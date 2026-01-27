@@ -211,3 +211,5 @@ test*
 temp*
 TODO
 models/
+logs/
+agent_actions_logs/
