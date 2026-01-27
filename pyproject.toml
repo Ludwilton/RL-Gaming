@@ -14,8 +14,10 @@ license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "gymnasium>=1.2.3",
+    "ipywidgets>=8.1.8",
     "minigrid>=3.0.0",
     "pettingzoo[butterfly]>=1.25.0",
+    "setuptools<80",
     "stable-baselines3[extra]>=2.7.1",
     "torch>=2.9.1",
 ]
@@ -37,7 +39,7 @@ Repository = "https://github.com/Ludwilton/RL-Gaming.git"
 
 [tool.ruff]
 # Some Ruff defaults - uncomment to set custom values
-# line-length = 88
+line-length = 100        # default is 88
 # indent-width = 4
 
 [tool.ruff.format]
@@ -118,6 +120,7 @@ ignore = [
     "Q003",     # Ruff recommends ignoring this
     "FBT001",   # flake8-boolean-trap - avoid boolean trap anti-patterns (not able to have 'debug: bool' as function argument)
     "FBT002",   # flake8-boolean-trap - avoid boolean trap anti-patterns (not able to have 'debug: bool' as function argument)
+    "C901",     # McCabe complexity - ignore complexity
 ]
 
 [tool.ruff.lint.flake8-import-conventions.aliases]

@@ -210,4 +210,5 @@ __marimo__/
 test*
 temp*
 TODO
-logs/
+models/
+agent_actions_logs/
