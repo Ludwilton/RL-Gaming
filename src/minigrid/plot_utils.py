@@ -2,11 +2,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from stable_baselines3.common.results_plotter import (
-    load_results,
-    ts2xy,
-    window_func,
-)
+from stable_baselines3.common.results_plotter import load_results, ts2xy, window_func
 
 
 def plot_training_results(log_dir: Path) -> None:
