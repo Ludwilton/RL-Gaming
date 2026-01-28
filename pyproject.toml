@@ -1,5 +1,5 @@
 [project]
-name = "rl-gaming"
+name = "rl_gaming"
 version = "0.1.0"
 description = "A reinforcement learning project for university focused on gaming."
 authors = [
