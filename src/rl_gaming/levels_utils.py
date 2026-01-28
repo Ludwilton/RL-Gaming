@@ -9,7 +9,7 @@ import pandas as pd
 from gymnasium.core import ObsType
 from minigrid.minigrid_env import MiniGridEnv
 from minigrid_levels_env import MiniGridLevelsEnv
-from model_utils import wrap_ppo_model_env, wrap_recurrent_ppo_model_env
+from model_utils import wrap_model_env
 from procedural_level import ProceduralLevel
 from sb3_contrib import RecurrentPPO
 from stable_baselines3.ppo import PPO
@@ -266,17 +266,14 @@ def _evaluate_recurrent_ppo(level_id: int, model_path: Path, n_episodes: int = 2
         level_id=level_id,
         n_episodes=n_episodes,
         model=model,
-        wrap_env=wrap_recurrent_ppo_model_env,
-        use_lstm=True,
+        use_recurrent=True,
     )
 
 
 def _evaluate_ppo(level_id: int, model_path: Path, n_episodes: int = 20) -> float:
     """Evaluate a level using trained RecurrentPPO model with LSTM."""
     model = PPO.load(model_path)
-    return _evaluate_level(
-        level_id=level_id, n_episodes=n_episodes, model=model, wrap_env=wrap_ppo_model_env
-    )
+    return _evaluate_level(level_id=level_id, n_episodes=n_episodes, model=model)
 
 
 def _get_obs_from_reset(env: MiniGridEnv) -> ObsType:
@@ -297,15 +294,16 @@ def _evaluate_level(
     level_id: int,
     n_episodes: int = 20,
     model: PPO | RecurrentPPO | None = None,
-    wrap_env: Callable | None = None,
-    use_lstm: bool = False,
+    use_recurrent: bool = False,
 ) -> float:
     """Evaluate a model (or random actions) on a MiniGrid level."""
     successes = 0
 
     base_env = MiniGridLevelsEnv(level_id=level_id)
     for _ in range(n_episodes):
-        env = wrap_env(base_env) if wrap_env else base_env
+        env = (
+            wrap_model_env(base_env, use_recurrent=use_recurrent) if model is not None else base_env
+        )
 
         obs = _get_obs_from_reset(env)
         lstm_states = None
@@ -316,7 +314,7 @@ def _evaluate_level(
         while not done:
             if model is None:
                 action = env.action_space.sample()
-            elif use_lstm:
+            elif use_recurrent:
                 action, lstm_states = model.predict(
                     obs, state=lstm_states, episode_start=episode_starts, deterministic=True
                 )
@@ -335,7 +333,7 @@ def _evaluate_level(
 
             total_reward += reward
 
-            if use_lstm and episode_starts is not None:
+            if use_recurrent and episode_starts is not None:
                 episode_starts = np.array(done, dtype=bool)
 
         env.close()

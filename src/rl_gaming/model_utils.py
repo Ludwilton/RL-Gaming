@@ -11,16 +11,14 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.ppo import PPO
 
 
-def wrap_recurrent_ppo_model_env(base_env: MiniGridEnv) -> MiniGridEnv:
-    """Wrap RecurrentPPO model environment."""
-    env = OneHotPartialObsWrapper(base_env)
-    env = ImgObsWrapper(env)
-    return make_vec_env(lambda: env, n_envs=1, vec_env_cls=DummyVecEnv)
+def wrap_model_env(base_env: MiniGridEnv, use_recurrent: bool = False) -> MiniGridEnv:
+    """Wrap a MiniGrid for environment for PPO or RecurrentPPO."""
+    if use_recurrent:
+        env = OneHotPartialObsWrapper(base_env)
+        env = ImgObsWrapper(env)
+        return make_vec_env(lambda: env, n_envs=1, vec_env_cls=DummyVecEnv)
 
-
-def wrap_ppo_model_env(base_env: MiniGridEnv) -> MiniGridEnv:
-    """Wrap PPO model environment."""
-    return ImgObsWrapper(base_env)
+    return ImgObsWrapper(env)
 
 
 def test_recurrent_ppo_on_procedural_level(model_path: Path) -> None:
@@ -43,7 +41,7 @@ def test_ppo_model_on_level(model_path: Path, level_id: int) -> None:
 
 def test_ppo_model_on_env(model_path: Path, base_env: MiniGridEnv) -> None:
     """Test PPO model on level."""
-    env = wrap_ppo_model_env(base_env)
+    env = wrap_model_env(base_env, use_recurrent=False)
 
     model = PPO.load(model_path, env=env)
 
@@ -66,7 +64,7 @@ def test_ppo_model_on_env(model_path: Path, base_env: MiniGridEnv) -> None:
 
 def test_recurrent_ppo_on_env(model_path: Path, base_env: MiniGridEnv) -> None:
     """Test RecurrentPPO on environment."""
-    env = wrap_recurrent_ppo_model_env(base_env)
+    env = wrap_model_env(base_env, use_recurrent=True)
 
     model = RecurrentPPO.load(model_path, env=env)
     obs = env.reset()
