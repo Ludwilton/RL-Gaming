@@ -16,6 +16,7 @@ def plot_training_results(log_dir: Path, window_size: int = 50) -> None:
     plt.scatter(x, y, s=2, alpha=0.6, zorder=2)
     plt.xlabel("Timesteps")
     plt.ylabel("Reward")
+    plt.ylim(-0.1, 1.1)
     plt.grid(zorder=1)
     plt.title("Plotting all data points")
 
@@ -25,6 +26,7 @@ def plot_training_results(log_dir: Path, window_size: int = 50) -> None:
     plt.plot(x_smooth, y_smooth, linewidth=2, zorder=2)
     plt.xlabel("Timesteps")
     plt.ylabel("Mean Reward")
+    plt.ylim(-0.1, 1.1)
     plt.grid(zorder=1)
     plt.title("Plotting smoothed data")
 
