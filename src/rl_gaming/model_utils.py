@@ -11,7 +11,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.ppo import PPO
 
 
-def wrap_model_env(base_env: MiniGridEnv, use_recurrent: bool = False) -> MiniGridEnv:
+def wrap_env_for_model(base_env: MiniGridEnv, use_recurrent: bool = False) -> MiniGridEnv:
     """Wrap a MiniGrid for environment for PPO or RecurrentPPO."""
     if use_recurrent:
         env = OneHotPartialObsWrapper(base_env)
@@ -21,65 +21,55 @@ def wrap_model_env(base_env: MiniGridEnv, use_recurrent: bool = False) -> MiniGr
     return ImgObsWrapper(base_env)
 
 
-def test_recurrent_ppo_on_procedural_level(model_path: Path) -> None:
-    """Test RecurrentPPO on procedural level."""
-    base_env = ProceduralLevel(render_mode="human", difficulty=1000, max_steps=100)
-    test_recurrent_ppo_on_env(model_path, base_env)
+def run_model_on_env(model_path: Path, base_env: MiniGridEnv, use_recurrent: bool = False) -> None:
+    """Run a PPO or Recurrent model on a MiniGrid environment."""
+    env = wrap_env_for_model(base_env, use_recurrent=use_recurrent)
 
+    if use_recurrent:
+        model = RecurrentPPO.load(model_path, env=env)
 
-def test_recurrent_ppo_on_level(model_path: Path, level_id: int) -> None:
-    """Test RecurrentPPO on level."""
-    base_env = MiniGridLevelsEnv(level_id=level_id, render_mode="human")
-    test_recurrent_ppo_on_env(model_path, base_env)
+        obs = env.reset()
+        lstm_states = None
+        episode_starts = np.ones((1,), dtype=bool)
 
+        while True:
+            action, lstm_states = model.predict(
+                obs, state=lstm_states, episode_start=episode_starts, deterministic=True
+            )
 
-def test_ppo_model_on_level(model_path: Path, level_id: int) -> None:
-    """Test PPO model on level."""
-    base_env = MiniGridLevelsEnv(level_id=level_id, render_mode="human")
-    test_ppo_model_on_env(model_path, base_env)
+            obs, rewards, dones, info = env.step(action)
+            episode_starts = dones
 
+            if dones[0]:
+                break
+    else:
+        model = PPO.load(model_path, env=env)
 
-def test_ppo_model_on_env(model_path: Path, base_env: MiniGridEnv) -> None:
-    """Test PPO model on level."""
-    env = wrap_model_env(base_env, use_recurrent=False)
+        obs, info = env.reset()
+        done = False
+        total_reward = 0
 
-    model = PPO.load(model_path, env=env)
+        while not done:
+            action, _state = model.predict(obs, deterministic=True)
 
-    obs, info = env.reset()
+            obs, reward, terminated, truncated, info = env.step(action)
 
-    done = False
-    total_reward = 0
+            total_reward += reward
 
-    while not done:
-        action, _state = model.predict(obs, deterministic=True)
-
-        obs, reward, terminated, truncated, info = env.step(action)
-
-        total_reward += reward
-
-        done = terminated or truncated
-
-    env.close()
-
-
-def test_recurrent_ppo_on_env(model_path: Path, base_env: MiniGridEnv) -> None:
-    """Test RecurrentPPO on environment."""
-    env = wrap_model_env(base_env, use_recurrent=True)
-
-    model = RecurrentPPO.load(model_path, env=env)
-    obs = env.reset()
-    lstm_states = None
-    episode_starts = np.ones((1,), dtype=bool)
-
-    while True:
-        action, lstm_states = model.predict(
-            obs, state=lstm_states, episode_start=episode_starts, deterministic=True
-        )
-
-        obs, rewards, dones, info = env.step(action)
-        episode_starts = dones
-
-        if dones[0]:
-            break
+            done = terminated or truncated
 
     env.close()
+
+
+def run_model_on_level(model_path: Path, level_id: int, use_recurrent: bool = False) -> None:
+    """Test model on a level."""
+    base_env = MiniGridLevelsEnv(level_id=level_id, render_mode="human")
+    run_model_on_env(model_path, base_env, use_recurrent)
+
+
+def run_model_on_procedural(
+    model_path: Path, difficulty: int = 1000, use_recurrent: bool = False
+) -> None:
+    """Test model on a level."""
+    base_env = ProceduralLevel(render_mode="human", difficulty=difficulty, max_steps=100)
+    run_model_on_env(model_path, base_env, use_recurrent)

@@ -9,7 +9,7 @@ import pandas as pd
 from gymnasium.core import ObsType
 from minigrid.minigrid_env import MiniGridEnv
 from minigrid_levels_env import MiniGridLevelsEnv
-from model_utils import wrap_model_env
+from model_utils import wrap_env_for_model
 from procedural_level import ProceduralLevel
 from sb3_contrib import RecurrentPPO
 from stable_baselines3.ppo import PPO
@@ -118,7 +118,7 @@ def run_random_actions_on_level(level_id: int, debug: bool = False) -> None:
     return actions_log_df
 
 
-def evaluate_all_levels_with_model_recurrent_ppo(
+def evaluate_levels_with_recurrent_ppo(
     model_path: Path, level_ids: list | None = None, n_episodes: int = 20
 ) -> dict:
     """Evaluate all levels with RecurrentPPO model."""
@@ -131,7 +131,7 @@ def evaluate_all_levels_with_model_recurrent_ppo(
     )
 
 
-def evaluate_all_levels_with_model_ppo(
+def evaluate_levels_with_ppo(
     model_path: Path, level_ids: list | None = None, n_episodes: int = 20
 ) -> dict:
     """Evaluate all levels with PPO model."""
@@ -144,7 +144,9 @@ def evaluate_all_levels_with_model_ppo(
     )
 
 
-def evaluate_all_levels_with_random(level_ids: list | None = None, n_episodes: int = 20) -> dict:
+def evaluate_levels_with_random_actions(
+    level_ids: list | None = None, n_episodes: int = 20
+) -> dict:
     """Evaluate all levels with random actions."""
     return _evaluate_all_levels(
         eval_fn=_evaluate_random,
@@ -302,7 +304,9 @@ def _evaluate_level(
     base_env = MiniGridLevelsEnv(level_id=level_id)
     for _ in range(n_episodes):
         env = (
-            wrap_model_env(base_env, use_recurrent=use_recurrent) if model is not None else base_env
+            wrap_env_for_model(base_env, use_recurrent=use_recurrent)
+            if model is not None
+            else base_env
         )
 
         obs = _get_obs_from_reset(env)
