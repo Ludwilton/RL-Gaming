@@ -96,8 +96,6 @@ class MiniGridLevelsEnv(MiniGridEnv):
         max_value = max(height, width)
         self.max_steps = 4 * max_value**2
 
-        self.max_steps = min(100, self.max_steps)  # Max 100
-
         self.mission_space = "Level " + str(self.level_id)
 
         # Environment configuration
