@@ -5,11 +5,10 @@ import numpy as np
 from stable_baselines3.common.results_plotter import load_results, ts2xy, window_func
 
 
-def plot_training_results(log_dir: Path) -> None:
+def plot_training_results(log_dir: Path, window_size: int = 50) -> None:
     """Plot training results from a directory."""
     df = load_results(log_dir)
     x, y = ts2xy(df, "timesteps")
-    data_limit = 50  # limit for smoothing
 
     # Plot raw data
     plt.figure(figsize=(10, 6))
@@ -22,13 +21,12 @@ def plot_training_results(log_dir: Path) -> None:
 
     # Plot smoothed data
     plt.subplot(2, 1, 2)
-    if len(x) >= data_limit:
-        x_smooth, y_smooth = window_func(x, y, data_limit, np.mean)
-        plt.plot(x_smooth, y_smooth, linewidth=2, zorder=2)
-        plt.xlabel("Timesteps")
-        plt.ylabel("Mean Reward")
-        plt.grid(zorder=1)
-        plt.title("Plotting smoothed data")
+    x_smooth, y_smooth = window_func(x, y, window_size, np.mean)
+    plt.plot(x_smooth, y_smooth, linewidth=2, zorder=2)
+    plt.xlabel("Timesteps")
+    plt.ylabel("Mean Reward")
+    plt.grid(zorder=1)
+    plt.title("Plotting smoothed data")
 
     plt.tight_layout()
     plt.show()
