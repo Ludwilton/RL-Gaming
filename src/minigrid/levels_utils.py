@@ -6,7 +6,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from minigrid_levels_env import MiniGridLevelsEnv
+from sb3_contrib import RecurrentPPO
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.ppo import PPO
+
+from minigrid.minigrid_env import MiniGridEnv
+from minigrid.wrappers import ImgObsWrapper, OneHotPartialObsWrapper
 
 
 def get_level_env_frame(level_id: int) -> np.ndarray:
@@ -105,7 +111,106 @@ def run_random_actions_on_level(level_id: int, debug: bool = False) -> None:
     return actions_log_df
 
 
-def evaluate_random_actions_on_level(level_id: int, n_episodes: int = 100) -> float:
+def evaluate_all_levels_with_model_recurrent_ppo(
+    model_path: Path, level_ids: list | None = None, n_episodes: int = 20
+) -> dict:
+    """Evaluate all levels with RecurrentPPO model."""
+    results = {}
+
+    if level_ids is None:
+        level_ids = MiniGridLevelsEnv.get_levels()
+
+    for level_id in level_ids:
+        print(f"Running level {level_id} with RecurrentPPO model...")
+
+        rate = _evaluate_model_on_level_recurrent_ppo(
+            level_id=level_id, model_path=model_path, n_episodes=n_episodes
+        )
+
+        results[level_id] = rate
+
+    return results
+
+
+def evaluate_all_levels_with_model_ppo(
+    model_path: Path, level_ids: list | None = None, n_episodes: int = 20
+) -> dict:
+    """Evaluate all levels with PPO model."""
+    results = {}
+
+    if level_ids is None:
+        level_ids = MiniGridLevelsEnv.get_levels()
+
+    for level_id in level_ids:
+        print(f"Running level {level_id} with PPO model...")
+
+        rate = _evaluate_model_on_level_ppo(
+            level_id=level_id, model_path=model_path, n_episodes=n_episodes
+        )
+
+        results[level_id] = rate
+
+    return results
+
+
+def evaluate_all_levels_with_random(level_ids: list | None = None, n_episodes: int = 20) -> dict:
+    """Evaluate all levels with random actions."""
+    results = {}
+
+    if level_ids is None:
+        level_ids = MiniGridLevelsEnv.get_levels()
+
+    for level_id in level_ids:
+        print(f"Running level {level_id} with random actions...")
+
+        rate = _evaluate_random_actions_on_level(level_id=level_id, n_episodes=n_episodes)
+
+        results[level_id] = rate
+
+    return results
+
+
+def bar_plot_levels_success_rate(results: dict) -> None:
+    """Plot results in bar plot."""
+    levels = list(results.keys())
+    success_rates = list(results.values())
+
+    plt.figure()
+    plt.bar(levels, success_rates)
+
+    plt.xlabel("Level")
+    plt.ylabel("Success Rate")
+    plt.title("Agent Success Rate per Level")
+
+    plt.ylim(0, 1)
+
+    plt.show()
+
+
+def test_ppo_model_on_level(model_path: Path, level_id: int) -> None:
+    """Test PPO model on level."""
+    env = _make_ppo_model_env(level_id)
+
+    model = PPO.load(model_path, env=env)
+
+    obs, info = env.reset()
+
+    done = False
+    total_reward = 0
+
+    while not done:
+        action, _state = model.predict(obs, deterministic=True)
+
+        obs, reward, terminated, truncated, info = env.step(action)
+
+        total_reward += reward
+
+        done = terminated or truncated
+
+    env.close()
+
+
+def _evaluate_random_actions_on_level(level_id: int, n_episodes: int = 20) -> float:
     """Evaluate random actions on level."""
     successes = 0
 
@@ -135,38 +240,88 @@ def evaluate_random_actions_on_level(level_id: int, n_episodes: int = 100) -> fl
     return successes / n_episodes
 
 
-def evaluate_all_levels(level_ids: list, n_episodes: int = 100) -> dict:
-    """Evaluate all levels."""
-    results = {}
+def _make_recurrent_ppo_model_env(level_id: int) -> MiniGridEnv:
+    """Create a MiniGridLevelsEnv environment wrapped with OneHotPartialObsWrapper and ImgObsWrapper for RecurrentPPO model."""
+    env = MiniGridLevelsEnv(level_id=level_id, render_mode=None)
+    env = OneHotPartialObsWrapper(env)
+    return ImgObsWrapper(env)
 
-    for level_id in level_ids:
-        print(f"Running level {level_id}...")
 
-        rate = evaluate_random_actions_on_level(
-            level_id=level_id, n_episodes=n_episodes
+def _make_ppo_model_env(level_id: int) -> MiniGridEnv:
+    """Make PPO model environment."""
+    env = MiniGridLevelsEnv(level_id=level_id, render_mode=None)
+    return ImgObsWrapper(env)
+
+
+def _evaluate_model_on_level_recurrent_ppo(
+    level_id: int, model_path: Path, n_episodes: int = 20
+) -> float:
+    """Evaluate RecurrentPPO model on level."""
+    successes = 0
+
+    model = RecurrentPPO.load(model_path)
+
+    for _ in range(n_episodes):
+        env = make_vec_env(
+            lambda: _make_recurrent_ppo_model_env(level_id), n_envs=1, vec_env_cls=DummyVecEnv
         )
 
-        results[level_id] = rate
+        obs = env.reset()
+        lstm_states = None
+        episode_starts = np.ones((1,), dtype=bool)
+        total_reward = 0
 
-    return results
+        while True:
+            action, lstm_states = model.predict(
+                obs, state=lstm_states, episode_start=episode_starts, deterministic=True
+            )
+
+            obs, rewards, dones, info = env.step(action)
+            episode_starts = dones
+
+            total_reward += rewards[0]
+
+            if dones[0]:
+                break
+
+        env.close()
+
+        # If reward > 0 it is a success
+        if total_reward > 0:
+            successes += 1
+
+    # Return success rate
+    return successes / n_episodes
 
 
-def plot_results(results: dict) -> None:
-    """Plot results in bar plot."""
-    levels = list(results.keys())
-    success_rates = list(results.values())
+def _evaluate_model_on_level_ppo(level_id: int, model_path: Path, n_episodes: int = 20) -> float:
+    """Evaluate PPO model on level."""
+    successes = 0
 
-    plt.figure()
-    plt.bar(levels, success_rates)
+    model = PPO.load(model_path)
 
-    plt.xlabel("Level")
-    plt.ylabel("Success Rate")
-    plt.title("Agent Success Rate per Level")
+    for _ in range(n_episodes):
+        env = _make_ppo_model_env(level_id)
 
-    plt.ylim(0, 1)
+        obs, info = env.reset()
 
-    plt.show()
+        done = False
+        total_reward = 0
 
+        while not done:
+            action, _state = model.predict(obs, deterministic=True)
 
-def test_model_on_level(model: PPO, level_id: int) -> None:
-    """Test model on level."""
+            obs, reward, terminated, truncated, info = env.step(action)
+
+            total_reward += reward
+
+            done = terminated or truncated
+
+        env.close()
+
+        # If reward > 0 it is a success
+        if total_reward > 0:
+            successes += 1
+
+    # Return success rate
+    return successes / n_episodes
