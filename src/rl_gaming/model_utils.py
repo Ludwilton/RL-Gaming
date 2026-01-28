@@ -18,7 +18,7 @@ def wrap_model_env(base_env: MiniGridEnv, use_recurrent: bool = False) -> MiniGr
         env = ImgObsWrapper(env)
         return make_vec_env(lambda: env, n_envs=1, vec_env_cls=DummyVecEnv)
 
-    return ImgObsWrapper(env)
+    return ImgObsWrapper(base_env)
 
 
 def test_recurrent_ppo_on_procedural_level(model_path: Path) -> None:
