@@ -5,13 +5,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from minigrid.minigrid_env import MiniGridEnv
-from minigrid.wrappers import ImgObsWrapper, OneHotPartialObsWrapper
 from minigrid_levels_env import MiniGridLevelsEnv
+from model_utils import wrap_ppo_model_env, wrap_recurrent_ppo_model_env
 from procedural_level import ProceduralLevel
 from sb3_contrib import RecurrentPPO
-from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.ppo import PPO
 
 
@@ -187,29 +184,6 @@ def bar_plot_levels_success_rate(results: dict) -> None:
     plt.show()
 
 
-def test_ppo_model_on_level(model_path: Path, level_id: int) -> None:
-    """Test PPO model on level."""
-    env = _make_ppo_model_env(level_id, render_mode="human")
-
-    model = PPO.load(model_path, env=env)
-
-    obs, info = env.reset()
-
-    done = False
-    total_reward = 0
-
-    while not done:
-        action, _state = model.predict(obs, deterministic=True)
-
-        obs, reward, terminated, truncated, info = env.step(action)
-
-        total_reward += reward
-
-        done = terminated or truncated
-
-    env.close()
-
-
 def get_procedural_level_env_frame(difficulty: int = 1000) -> np.ndarray:
     """Get procedural level environment frame."""
     env = ProceduralLevel(difficulty=difficulty, max_steps=200)
@@ -272,19 +246,6 @@ def _evaluate_random_actions_on_level(level_id: int, n_episodes: int = 20) -> fl
     return successes / n_episodes
 
 
-def _make_recurrent_ppo_model_env(level_id: int) -> MiniGridEnv:
-    """Create a MiniGridLevelsEnv environment wrapped with OneHotPartialObsWrapper and ImgObsWrapper for RecurrentPPO model."""
-    env = MiniGridLevelsEnv(level_id=level_id, render_mode=None)
-    env = OneHotPartialObsWrapper(env)
-    return ImgObsWrapper(env)
-
-
-def _make_ppo_model_env(level_id: int, render_mode: str | None = None) -> MiniGridEnv:
-    """Make PPO model environment."""
-    env = MiniGridLevelsEnv(level_id=level_id, render_mode=render_mode)
-    return ImgObsWrapper(env)
-
-
 def _evaluate_model_on_level_recurrent_ppo(
     level_id: int, model_path: Path, n_episodes: int = 20
 ) -> float:
@@ -293,10 +254,9 @@ def _evaluate_model_on_level_recurrent_ppo(
 
     model = RecurrentPPO.load(model_path)
 
+    base_env = MiniGridLevelsEnv(level_id=level_id, render_mode=None)
     for _ in range(n_episodes):
-        env = make_vec_env(
-            lambda: _make_recurrent_ppo_model_env(level_id), n_envs=1, vec_env_cls=DummyVecEnv
-        )
+        env = wrap_recurrent_ppo_model_env(base_env)
 
         obs = env.reset()
         lstm_states = None
@@ -332,8 +292,9 @@ def _evaluate_model_on_level_ppo(level_id: int, model_path: Path, n_episodes: in
 
     model = PPO.load(model_path)
 
+    base_env = MiniGridLevelsEnv(level_id=level_id)
     for _ in range(n_episodes):
-        env = _make_ppo_model_env(level_id)
+        env = wrap_ppo_model_env(base_env)
 
         obs, info = env.reset()
 
