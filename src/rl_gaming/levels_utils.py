@@ -8,6 +8,7 @@ import pandas as pd
 from minigrid.minigrid_env import MiniGridEnv
 from minigrid.wrappers import ImgObsWrapper, OneHotPartialObsWrapper
 from minigrid_levels_env import MiniGridLevelsEnv
+from procedural_level import ProceduralLevel
 from sb3_contrib import RecurrentPPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import DummyVecEnv
@@ -207,6 +208,38 @@ def test_ppo_model_on_level(model_path: Path, level_id: int) -> None:
         done = terminated or truncated
 
     env.close()
+
+
+def get_procedural_level_env_frame(difficulty: int = 1000) -> np.ndarray:
+    """Get procedural level environment frame."""
+    env = ProceduralLevel(difficulty=difficulty, max_steps=200)
+    env.reset()
+
+    return env.get_frame(highlight=False)
+
+
+def display_procedural_levels(
+    n_levels: int = 10, max_cols: int = 5, difficulty: int = 1000
+) -> None:
+    """Display procedural levels."""
+    ncols = min(max_cols, n_levels)
+    nrows = math.ceil(n_levels / ncols)
+
+    fig, axes = plt.subplots(nrows, ncols, figsize=(2 * ncols, 2 * nrows))
+
+    axes = axes.flatten() if n_levels > 1 else [axes]
+
+    for i in range(n_levels):
+        img = get_procedural_level_env_frame(difficulty=difficulty)
+
+        axes[i].imshow(img)
+        axes[i].axis("off")
+
+    for j in range(i + 1, len(axes)):
+        axes[j].axis("off")
+
+    plt.tight_layout()
+    plt.show()
 
 
 def _evaluate_random_actions_on_level(level_id: int, n_episodes: int = 20) -> float:
