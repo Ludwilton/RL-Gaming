@@ -188,7 +188,7 @@ def bar_plot_levels_success_rate(results: dict) -> None:
 
 def test_ppo_model_on_level(model_path: Path, level_id: int) -> None:
     """Test PPO model on level."""
-    env = _make_ppo_model_env(level_id)
+    env = _make_ppo_model_env(level_id, render_mode="human")
 
     model = PPO.load(model_path, env=env)
 
@@ -246,9 +246,9 @@ def _make_recurrent_ppo_model_env(level_id: int) -> MiniGridEnv:
     return ImgObsWrapper(env)
 
 
-def _make_ppo_model_env(level_id: int) -> MiniGridEnv:
+def _make_ppo_model_env(level_id: int, render_mode: str | None = None) -> MiniGridEnv:
     """Make PPO model environment."""
-    env = MiniGridLevelsEnv(level_id=level_id, render_mode=None)
+    env = MiniGridLevelsEnv(level_id=level_id, render_mode=render_mode)
     return ImgObsWrapper(env)
 
 
