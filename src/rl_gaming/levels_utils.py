@@ -175,7 +175,7 @@ def bar_plot_levels_success_rate(results: dict) -> None:
     levels = list(results.keys())
     success_rates = list(results.values())
 
-    plt.figure()
+    plt.figure(figsize=(4, 3))
     plt.bar(levels, success_rates)
 
     plt.xlabel("Level")
