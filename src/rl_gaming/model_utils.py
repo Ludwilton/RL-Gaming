@@ -61,9 +61,13 @@ def run_model_on_env(model_path: Path, base_env: MiniGridEnv, use_recurrent: boo
     env.close()
 
 
-def run_model_on_level(model_path: Path, level_id: int, use_recurrent: bool = False) -> None:
+def run_model_on_level(
+    model_path: Path, level_id: int, use_recurrent: bool = False, see_through_walls: bool = False
+) -> None:
     """Test model on a level."""
-    base_env = MiniGridLevelsEnv(level_id=level_id, render_mode="human")
+    base_env = MiniGridLevelsEnv(
+        level_id=level_id, render_mode="human", see_through_walls=see_through_walls
+    )
     run_model_on_env(model_path, base_env, use_recurrent)
 
 

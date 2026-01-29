@@ -132,7 +132,10 @@ def evaluate_levels_with_recurrent_ppo(
 
 
 def evaluate_levels_with_ppo(
-    model_path: Path, level_ids: list | None = None, n_episodes: int = 20
+    model_path: Path,
+    level_ids: list | None = None,
+    n_episodes: int = 20,
+    see_through_walls: bool = False,
 ) -> dict:
     """Evaluate all levels with PPO model."""
     return _evaluate_all_levels(
@@ -141,6 +144,7 @@ def evaluate_levels_with_ppo(
         n_episodes=n_episodes,
         model_path=model_path,
         description="PPO model",
+        see_through_walls=see_through_walls,
     )
 
 
@@ -163,6 +167,7 @@ def _evaluate_all_levels(
     n_episodes: int = 20,
     model_path: Path | None = None,
     description: str | None = None,
+    see_through_walls: bool = False,
 ) -> dict:
     """Evaluate multiple levels using the given evaluation function."""
     results = {}
@@ -175,9 +180,16 @@ def _evaluate_all_levels(
             print(f"Running level {level_id} with {description}...")
 
         if model_path is not None:
-            rate = eval_fn(level_id=level_id, n_episodes=n_episodes, model_path=model_path)
+            rate = eval_fn(
+                level_id=level_id,
+                n_episodes=n_episodes,
+                model_path=model_path,
+                see_through_walls=see_through_walls,
+            )
         else:
-            rate = eval_fn(level_id=level_id, n_episodes=n_episodes)
+            rate = eval_fn(
+                level_id=level_id, n_episodes=n_episodes, see_through_walls=see_through_walls
+            )
 
         results[level_id] = rate
 
@@ -256,12 +268,16 @@ def display_procedural_levels(
     plt.show()
 
 
-def _evaluate_random(level_id: int, n_episodes: int = 20) -> float:
+def _evaluate_random(level_id: int, n_episodes: int = 20, see_through_walls: bool = False) -> float:
     """Evaluate a level using random actions."""
-    return _evaluate_level(level_id=level_id, n_episodes=n_episodes)
+    return _evaluate_level(
+        level_id=level_id, n_episodes=n_episodes, see_through_walls=see_through_walls
+    )
 
 
-def _evaluate_recurrent_ppo(level_id: int, model_path: Path, n_episodes: int = 20) -> float:
+def _evaluate_recurrent_ppo(
+    level_id: int, model_path: Path, n_episodes: int = 20, see_through_walls: bool = False
+) -> float:
     """Evaluate a level using a trained PPO model."""
     model = RecurrentPPO.load(model_path)
     return _evaluate_level(
@@ -269,13 +285,18 @@ def _evaluate_recurrent_ppo(level_id: int, model_path: Path, n_episodes: int = 2
         n_episodes=n_episodes,
         model=model,
         use_recurrent=True,
+        see_through_walls=see_through_walls,
     )
 
 
-def _evaluate_ppo(level_id: int, model_path: Path, n_episodes: int = 20) -> float:
+def _evaluate_ppo(
+    level_id: int, model_path: Path, n_episodes: int = 20, see_through_walls: bool = False
+) -> float:
     """Evaluate a level using trained RecurrentPPO model with LSTM."""
     model = PPO.load(model_path)
-    return _evaluate_level(level_id=level_id, n_episodes=n_episodes, model=model)
+    return _evaluate_level(
+        level_id=level_id, n_episodes=n_episodes, model=model, see_through_walls=see_through_walls
+    )
 
 
 def _get_obs_from_reset(env: MiniGridEnv) -> ObsType:
@@ -297,11 +318,12 @@ def _evaluate_level(
     n_episodes: int = 20,
     model: PPO | RecurrentPPO | None = None,
     use_recurrent: bool = False,
+    see_through_walls: bool = False,
 ) -> float:
     """Evaluate a model (or random actions) on a MiniGrid level."""
     successes = 0
 
-    base_env = MiniGridLevelsEnv(level_id=level_id)
+    base_env = MiniGridLevelsEnv(level_id=level_id, see_through_walls=see_through_walls)
     for _ in range(n_episodes):
         env = (
             wrap_env_for_model(base_env, use_recurrent=use_recurrent)
