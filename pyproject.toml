@@ -1,5 +1,5 @@
 [project]
-name = "rl-gaming"
+name = "rl_gaming"
 version = "0.1.0"
 description = "A reinforcement learning project for university focused on gaming."
 authors = [
@@ -17,6 +17,7 @@ dependencies = [
     "ipywidgets>=8.1.8",
     "minigrid>=3.0.0",
     "pettingzoo[butterfly]>=1.25.0",
+    "sb3-contrib>=2.7.1",
     "setuptools<80",
     "stable-baselines3[extra]>=2.7.1",
     "torch>=2.9.1",
@@ -121,6 +122,7 @@ ignore = [
     "FBT001",   # flake8-boolean-trap - avoid boolean trap anti-patterns (not able to have 'debug: bool' as function argument)
     "FBT002",   # flake8-boolean-trap - avoid boolean trap anti-patterns (not able to have 'debug: bool' as function argument)
     "C901",     # McCabe complexity - ignore complexity
+    "PLR0913",   # Allow more than 5 arguments in function
 ]
 
 [tool.ruff.lint.flake8-import-conventions.aliases]

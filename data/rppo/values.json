@@ -1,0 +1,32 @@
+{
+    "info": {
+        "device": "cuda",
+        "freq": 2000,
+        "n_timesteps": 5000000
+    },
+    "environment":{
+        "class": "ProceduralLevel",
+        "params": {
+            "difficulty": 1000,
+            "max_steps": 120
+        }
+    },
+    "optimiser": {
+        "n_envs": 12,
+        "wrapper_cls": [
+            "OneHotPartialObsWrapper",
+            "ImgObsWrapper"
+        ]
+    },
+    "policy_kwargs": {
+        "features_extractor_class": "MinigridFeaturesExtractor",
+        "features_extractor_kwargs": {
+            "features_dim": 256
+        },
+        "normalize_images": false
+    },
+    "model": {
+        "algorithm": "RecurrentPPO",
+        "policy": "CnnLstmPolicy"
+    }
+}
