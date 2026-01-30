@@ -13,7 +13,7 @@ For more information regarding this specific project, see [project definition](d
 
 ## Run
 
-To get an overview of the project the [presentation file](src/rl_gaming/presentation.ipynb)
+To get an overview of the project, see the [presentation file](src/rl_gaming/presentation.ipynb)
 
 ## Development
 
