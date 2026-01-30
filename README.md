@@ -11,6 +11,10 @@ For more information regarding this specific project, see [project definition](d
 2. Install UV globally on your system
 3. Open the repo and run `make init`
 
+## Run
+
+To get an overview of the project the [presentation file](src/rl_gaming/presentation.ipynb)
+
 ## Development
 
 ### Ruff
